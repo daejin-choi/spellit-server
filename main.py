@@ -19,6 +19,7 @@ from google.appengine.ext.webapp import util
 from database import wordDB
 from google.appengine.api import urlfetch
 from django.utils import simplejson
+import news
 
 import re
 TOKEN_TYPE_RE = re.compile(r'''
@@ -107,11 +108,25 @@ class WordHandler(webapp.RequestHandler):
         
         word_db_handle = wordDB.WordDBInterface
         map( lambda x:word_db_handle.insert(x), words)
+
+
+
+class CrawlWordHandler(webapp.RequestHandler):
+    def get(self):
+        url = "http://rss.cnn.com/rss/edition.rss"
+        result = urlfetch.Fetch(url)
+        
+        if result.status_code != 200:
+            return
+
+        NM = news.NewsManager()
+        NM.parseFeed(result.content, 2) # 2: number of news
         
 def main():
     application = webapp.WSGIApplication([('/words', WordListHandler), 
                                           ('/meaning', MeaningHandler),
-                                          ('/privacy/insertword', WordHandler)],
+                                          ('/privacy/insertword', WordHandler),
+                                          ('/privacy/crawlword', CrawlWordHandler)],
                                          debug=True)
     util.run_wsgi_app(application)
 
