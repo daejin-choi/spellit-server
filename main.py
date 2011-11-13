@@ -15,7 +15,7 @@
 # limitations under the License.
 #
 from google.appengine.ext import webapp
-from database import wordDB
+from database import worddb
 from google.appengine.api import urlfetch
 import json
 import news
@@ -32,11 +32,6 @@ TOKEN_TYPE_RE = re.compile(r'''
     ( ={2,10}Interjection={2,10}[^=]+= )
 ''', re.VERBOSE)
 
-def ShowErrorScreen(handler, errormsg):
-    handler.response.header = { 'Content-Type':'text/html'}
-    handler.response.out.write(errormsg)
-
-
 class BaseHandler(webapp.RequestHandler):
     
     def render(self, html, json):
@@ -52,39 +47,21 @@ class BaseHandler(webapp.RequestHandler):
             self.error(406)
 
 
-class WordListHandler(webapp.RequestHandler):
+class WordListHandler(BaseHandler):
     def get(self):
-        """
-        content_type = self.request.headers['Content_Type']
-        
-        if content_type != 'application/json':
-            ShowErrorScreen(self, 'Invalid access')
-            return
-        """
         offset = self.request.get('offset', default_value=0)
         limit = self.request.get('limit', default_value=10)
         
         offset = int(offset)
         limit = int(limit)
         
-        word_db_handle = wordDB.WordDBInterface
-        #word_db_handle.insert('11111')
+        word_db_handle = worddb.WordDBInterface
         
         words = list(word_db_handle.getWords(int(limit), int(offset)))
-        header = {'Content-Type':'applications/json'}
+        self.render(html=words, json=words)
         
-        self.response.header = header
-        self.response.out.write(words)
-        
-class MeaningHandler(webapp.RequestHandler):
+class MeaningHandler(BaseHandler):
     def get(self):
-        """
-        content_type = self.request.headers['Content_Type']
-        
-        if content_type != 'application/json':
-            ShowErrorScreen(self, 'Invalid access')
-            return
-        """
         word = self.request.get('word')
         
         url = 'http://en.wiktionary.org/w/api.php?action=query&prop=revisions&rvprop=content&format=json'
@@ -113,28 +90,24 @@ class MeaningHandler(webapp.RequestHandler):
             break
         
         
-class WordHandler(webapp.RequestHandler):
+class WordHandler(BaseHandler):
     def get(self):
         strwords = self.request.get('words')
         strwords = str(strwords)
         
         words = strwords.split('|')
         
-        word_db_handle = wordDB.WordDBInterface
+        word_db_handle = worddb.WordDBInterface
         map(word_db_handle.insert, words)
 
 
 
-class CrawlWordHandler(webapp.RequestHandler):
+class CrawlWordHandler(BaseHandler):
     def get(self):
-        url = "http://rss.cnn.com/rss/edition.rss"
-        result = urlfetch.Fetch(url)
-        
-        if result.status_code != 200:
-            return
 
         NM = news.NewsManager()
-        NM.parseFeed(result.content, 2) # 2: number of news
+        result = NM.GetNewsWords(2) # 2: number of news
+        print result
 
 
 application = webapp.WSGIApplication([('/words', WordListHandler), 
