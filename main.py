@@ -107,7 +107,9 @@ class CrawlWordHandler(BaseHandler):
 
         NM = news.NewsManager()
         result = NM.GetNewsWords(2) # 2: number of news
-        print result
+        
+        word_db_handle = worddb.WordDBInterface
+        word_db_handle.insertWords(result)
 
 
 application = webapp.WSGIApplication([('/words', WordListHandler), 

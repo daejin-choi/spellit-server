@@ -36,14 +36,16 @@ class NewsManager(object):
                     words = content.split(' ')
                     
                     def storeFrequncy( word ):
-                        word.strip()
-                        # stopwords process
                         if word in self.wordFrequency:
                             self.wordFrequency[word] += 1
                         else:
                             self.wordFrequency[word] = 1
                     
-                    map(storeFrequncy, words)
+                    for word in words:
+                        #ascword = word.encode('ascii', 'ignore')
+                        word.strip()
+                        if word.isalpha() and word.islower():
+                            storeFrequncy(word)
                 
                 map(extractWords, sentences)
         
