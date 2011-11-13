@@ -15,10 +15,9 @@
 # limitations under the License.
 #
 from google.appengine.ext import webapp
-from google.appengine.ext.webapp import util
 from database import wordDB
 from google.appengine.api import urlfetch
-from django.utils import simplejson
+import json
 import news
 
 import re
@@ -36,6 +35,21 @@ TOKEN_TYPE_RE = re.compile(r'''
 def ShowErrorScreen(handler, errormsg):
     handler.response.header = { 'Content-Type':'text/html'}
     handler.response.out.write(errormsg)
+
+
+class BaseHandler(webapp.RequestHandler):
+    
+    def render(self, html, json):
+        t = self.request.accept.best_match(['text/html', 'application/json'])
+        self.response.headers['Vary'] = 'Accept'
+        if t:
+            self.response.headers['Content-Type'] = t
+        if t == 'application/json':
+            json.dump(self.response.out, json)
+        elif t == 'text/html':
+            self.response.out.write(html)
+        else:
+            self.error(406)
 
 
 class WordListHandler(webapp.RequestHandler):
@@ -81,7 +95,7 @@ class MeaningHandler(webapp.RequestHandler):
         if result.status_code != 200:
             return
         
-        obj = simplejson.loads(result.content)
+        obj = json.loads(result.content)
         pagedata = obj['query']['pages']
         pages = pagedata.keys()
 
@@ -107,7 +121,7 @@ class WordHandler(webapp.RequestHandler):
         words = strwords.split('|')
         
         word_db_handle = wordDB.WordDBInterface
-        map( lambda x:word_db_handle.insert(x), words)
+        map(word_db_handle.insert, words)
 
 
 
@@ -121,15 +135,10 @@ class CrawlWordHandler(webapp.RequestHandler):
 
         NM = news.NewsManager()
         NM.parseFeed(result.content, 2) # 2: number of news
-        
-def main():
-    application = webapp.WSGIApplication([('/words', WordListHandler), 
-                                          ('/meaning', MeaningHandler),
-                                          ('/privacy/insertword', WordHandler),
-                                          ('/privacy/crawlword', CrawlWordHandler)],
-                                         debug=True)
-    util.run_wsgi_app(application)
 
 
-if __name__ == '__main__':
-    main()
+application = webapp.WSGIApplication([('/words', WordListHandler), 
+                                      ('/meaning', MeaningHandler),
+                                      ('/privacy/insertword', WordHandler),
+                                      ('/privacy/crawlword', CrawlWordHandler)],
+                                     debug=True)

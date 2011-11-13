@@ -4,17 +4,21 @@ Created on Nov 11, 2011
 @author: soyenze
 '''
 
-from google.appengine.api import urlfetch
+import lxml.html
+import lxml.cssselect
+import feedparser
 
 NEWS_TAG = ['title', 'guid', 'link', 'description', 'pubDate']
 
-class NewsManager:
+class NewsManager(object):
+
     def __init__(self):
         self.wordFrequency = {}
-        
+
     def parseFeed(self, content, maxlength=20):
         
-        startidx = endidx = 0
+        startidx = 0
+        endidx = 0
         retcount = 0
         
         while( True ):
@@ -28,9 +32,9 @@ class NewsManager:
             item = content[startidx:endidx]
             retcount += 1
             
-            sentences = list( self.crawlWords(item) )
+            sentences = list(self.crawlWords(item))
             
-            def extractWords( content ):
+            def extractWords(content):
                 words = content.split(' ')
                 
                 def storeFrequncy( word ):
@@ -38,14 +42,14 @@ class NewsManager:
                     
                     # stopwords process
                     
-                    if self.wordFrequency.has_key(word):
+                    if word in self.wordFrequency:
                         self.wordFrequency[word] += 1
                     else:
                         self.wordFrequency[word] = 1
                 
-                map( lambda x:storeFrequncy(x), words)
+                map(storeFrequncy, words)
                 
-            map( lambda x:extractWords(x), sentences)
+            map(extractWords, sentences)
 
         print self.wordFrequency
         
@@ -62,36 +66,10 @@ class NewsManager:
         
         print feedDict['link'], '\n'
         
-        result = urlfetch.Fetch(feedDict['link'])
+        html = lxml.html.parse(feedDict['link'])
+        sel = lxml.cssselect.CSSSelector('div.cnn_strycntntlft > p')
+        paras = sel(html)
         
-        if result.status_code != 200:
-            return
-        
-        content = result.content
-        
-        startDividx = content.find('cnn_strycntntlft')
-
-        if startDividx != -1:
-            content = content[startDividx+2+len('cnn_strycntntlft'):]
-            
-            startDividx = endDividx = 0
-            
-            while( True ):
-                startDividx = content.find('<div', startDividx)
-                endDividx = content.find('</div>', endDividx)
-                
-                if startDividx == -1 or endDividx < startDividx:
-                    break
-                startDividx += 4
-                endDividx += 6
-
-            content = content[:endDividx]
-            startidx = endidx = 0
-            
-            while( True ):
-                startidx = content.find('<p>', endidx )
-                endidx = content.find('</p>', startidx )
-                
-                if startidx == -1 or endidx == -1:
-                    break
-                yield content[startidx+3:endidx]
+        for p in paras:
+            if p.text:
+                yield p.text
