@@ -10,4 +10,4 @@ libraries:
 
 handlers:
 - url: .*
-  script: main.application
+  script: spellit.app.application
