@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 import json
-from google.appengine.api import urlfetch
+import base64
+import string
+import hmac
+import hashlib
 from google.appengine.ext import webapp
 from .word import Word
 from . import news
@@ -56,7 +59,36 @@ class CrawlWordHandler(BaseHandler):
         Word.increment_frequencies(result)
 
 
-application = webapp.WSGIApplication([('/words', WordListHandler),
+class HomeHandler(BaseHandler):
+
+    secret = 'facebook app secret goes here'
+
+    def base64_url_decode(self, input_):
+        if not isinstance(input_, str):
+            input_ = str(input_)
+        padding_factor = (4 - len(input_) % 4) % 4
+        input_ += '=' * padding_factor
+        return base64.urlsafe_b64decode(input_)
+
+    def get(self):
+        from pprint import pformat
+        self.response.headers['Content-Type'] = 'text/plain'
+        signed_request = str(self.request.params['signed_request'])
+        sig, payload = signed_request.split('.', 1)
+        obj = self.base64_url_decode(payload)
+        ver = hmac.new(self.secret, payload, hashlib.sha256).digest()
+        obj = json.loads(obj)
+        sig = self.base64_url_decode(sig)
+        print>>self.response.out, pformat(sig)
+        print>>self.response.out, pformat(ver)
+        print>>self.response.out, pformat(ver == sig)
+        print>>self.response.out, pformat(obj)
+
+    post = get
+
+
+application = webapp.WSGIApplication([('/', HomeHandler),
+                                      ('/words', WordListHandler),
                                       ('/words/([^/]+)', MeaningHandler),
                                       ('/privacy/crawlword', CrawlWordHandler)],
                                      debug=True)
