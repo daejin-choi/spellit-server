@@ -6,7 +6,11 @@ api_version: 1
 
 libraries:
 - name: lxml
-  version: 2.3
+  version: latest
+- name: jinja2
+  version: latest
+- name: markupsafe
+  version: latest
 
 handlers:
 - url: .*
