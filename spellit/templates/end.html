@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Spell It</title>
+    <link href="{{ url_for('static', filename='bootstrap.css') }}" 
+          rel="stylesheet">
+    <link href="{{ url_for('static', filename='docs/assets/css/docs.css')}} " 
+          rel="stylesheet">
+    <link href="{{ url_for('static',
+          filename='docs/assets/js/google-code-prettify/prettify.css') }} " 
+          rel="stylesheet">
+  </head>
+  <body>
+    <p>Mission Success</p>
+    <a href="{{ url_for('plays') }}">Restart</a>
+  </body>
+</html>
