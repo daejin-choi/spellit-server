@@ -14,5 +14,5 @@ libraries:
 
 handlers:
 - url: .*
-  script: spellit.app.application
+  script: spellit.app.app
   secure: always
