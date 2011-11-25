@@ -4,6 +4,14 @@
    {% block head %}
       <meta charset="utf-8" />
       <title>Spell It</title>
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+    <div style="background-color:#FF0000">
+        {{ messages[0] }}
+    </div>
+    {% endif %}
+  {% endwith %}
+ 
       <link href="{{ url_for('static', filename='bootstrap.css') }}" 
             rel="stylesheet">
       <link href="{{ url_for('static', filename='docs/assets/css/docs.css')}} " 

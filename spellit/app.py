@@ -6,7 +6,7 @@ import hmac
 import base64
 import datetime
 from google.appengine.api import urlfetch
-from flask import (Flask, abort, g, redirect, render_template, request,
+from flask import (Flask, abort, flash, g, redirect, render_template, request,
                    session, url_for)
 from .word import Word
 from .user import User
@@ -94,7 +94,13 @@ def home():
 @app.route('/plays/<word>/<trial>')
 def plays(word, trial=''):
     word = current_user().decrypt_word(str(word))
-    assert word.startswith(trial), 'word = %r, trial = %r' % (word, trial)
+    #assert word.startswith(trial), 'word = %r, trial = %r' % (word, trial)
+    if not word.startswith(trial):
+        flash('You are Incorrect, please try with another spelling')
+        if len(trial) != 0:
+            trial = trial[:-1]
+        return redirect(url_for('plays', word=urlize_word(word),
+                                         trial=trial))
     if word.word == trial:
         record = session.get('record', frozenset())
         session['record'] = record.union(frozenset([word]))
