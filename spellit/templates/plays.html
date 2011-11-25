@@ -5,7 +5,8 @@
   </div>
   <div class="game-keyboard">
     {% for char in character_set %}
-      {{ char }} /
+      <a href="{{ url_for('plays', word=word|safeword, trial=trial ~ char) }}">
+        {{- char }}</a>
     {% endfor %}
   </div>
 {% endblock %}

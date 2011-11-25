@@ -43,6 +43,30 @@ class Word(db.Model):
     def word(self):
         return self.key().name()
 
+    def __iter__(self):
+        return iter(self.word)
+
+    def __len__(self):
+        return len(self.word)
+
+    def __contains__(self, character):
+        return character in self.word
+
+    def __getitem__(self, idx):
+        return self.word[idx]
+
+    def index(self, *args, **kwargs):
+        return self.word.index(*args, **kwargs)
+
+    def count(self, *args, **kwargs):
+        return self.word.count(*args, **kwargs)
+
+    def startswith(self, prefix, start=0, end=None):
+        prefix = unicode(prefix)
+        if end is None:
+            end = len(self)
+        return self.word.startswith(prefix, start, end)
+
     @property
     def meaning(self):
         if self.meaning_updated_at is None:
@@ -62,7 +86,10 @@ class Word(db.Model):
     def update_meaning(self):
         self.meaning = query_word(self.word)
 
-    @property
-    def character_set(self):
-        return frozenset(self.key().name())
+    def __unicode__(self):
+        return self.word
+
+    def __repr__(self):
+        cls = type(self)
+        return '<{0}.{1} {2!r}>'.format(cls.__module__, cls.__name__, self.word)
 

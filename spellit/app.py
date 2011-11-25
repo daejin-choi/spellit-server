@@ -31,6 +31,11 @@ def inject_user():
     return {'current_user': current_user()}
 
 
+@app.template_filter('safeword')
+def urlize_word(word):
+    return current_user().encrypt_word(word)
+
+
 def current_user():
     return User.get_by_key_name(session['fbid'])
 
@@ -72,33 +77,14 @@ def home():
 
 
 @app.route('/plays/<word>')
-def plays(word):
-    try:
-        started_at = session['started_at']
-    except KeyError:
-        started_at = datetime.datetime.utcnow()
-        session['started_at'] = started_at
+@app.route('/plays/<word>/<trial>')
+def plays(word, trial=''):
     word = current_user().decrypt_word(str(word))
-    character_set = word.character_set
-    return render_template('plays.html', word=word, character_set=character_set)
-
-
-@app.route('/plays/playing')
-def playing():
-    btn1 = request.values.get('btn1')
-    word = session['word']
-    correct_spell = session['correct_spell']
-
-    len_correct_spell = len(correct_spell)
-    len_word = len(word)
-    if word[:len_correct_spell+1] == correct_spell + btn1:
-        session['correct_spell'] = session['correct_spell'] + btn1
-        session['word'] = session['correct_spell']
-
-        if len_correct_spell + 1 + 5 > len_word:
-            return ''
-        return word[len_correct_spell + 1 + 5]
-    return btn1
+    assert word.startswith(trial), 'word = %r, trial = %r' % (word, trial)
+    character_set = list(frozenset(word[len(trial):]))
+    random.shuffle(character_set)
+    return render_template('plays.html',
+                           word=word, character_set=character_set, trial=trial)
 
 
 @app.route('/end')

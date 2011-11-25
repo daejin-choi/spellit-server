@@ -4,7 +4,7 @@
     <div class="logo-images">
       <img src="{{ url_for('static', filename='images/logo.png') }}">
     </div>
-    <a href="{{ url_for('plays', word=current_user.encrypt_word(next_word)) }}"
+    <a href="{{ url_for('plays', word=next_word|safeword) }}"
        class="btn primary large">Play Games!</a>
   </div>
 {% endblock %}
