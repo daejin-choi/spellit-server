@@ -20,7 +20,7 @@ facebook_secret = 'cb1b72a8ccb11253bcef244fbccbd7da'
 
 @app.before_request
 def verify_sign():
-    if request.path != '/':
+    if request.path != '/' and request.path != '/tasks/crawlword':
         try:
             g.user = session['fbid']
         except KeyError:
@@ -148,11 +148,12 @@ def meaning(word):
     else:
         abort(400)
 
-@app.route('/privacy/crawlword')
+@app.route('/tasks/crawlword')
 def crawlword():
     NM = news.NewsManager()
-    result = NM.GetNewsWords(2) # 2: number of news
+    result = NM.GetNewsWords(5) # 5: number of news
     Word.increment_frequencies(result)
 
     return ''
+
 

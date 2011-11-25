@@ -12,6 +12,7 @@ import lxml.cssselect
 
 FEED_URL = "http://rss.cnn.com/rss/edition.rss"
 NEWS_TAG = "div.cnn_strycntntlft > p"
+STOPWORD_LIST = ['href', 'br', 'input', 'type']
 
 
 class NewsManager(object):
@@ -37,6 +38,8 @@ class NewsManager(object):
                     words = content.split(' ')
 
                     def storeFrequncy( word ):
+                        if len(word) <= 1 or word in STOPWORD_LIST:
+                            pass
                         if word in self.wordFrequency:
                             self.wordFrequency[word] += 1
                         else:
