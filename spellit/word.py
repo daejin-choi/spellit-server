@@ -62,3 +62,7 @@ class Word(db.Model):
     def update_meaning(self):
         self.meaning = query_word(self.word)
 
+    @property
+    def character_set(self):
+        return frozenset(self.key().name())
+

@@ -1,14 +1,11 @@
 {% extends 'base.html' %}
 {% block container %}
   <div class="game-dictionary">
-    {{ meaning|safe }}
+    {{ word.meaning|safe }}
   </div>
   <div class="game-keyboard">
-      <p>
-      {% for number in range(5) %}
-      <input type="button" id="btn{{number}}" value="{{ word[number] }}"
-      OnClick="javascript:playing({{ number }});">
-      {% endfor %}
-      </p>
+    {% for char in character_set %}
+      {{ char }} /
+    {% endfor %}
   </div>
 {% endblock %}

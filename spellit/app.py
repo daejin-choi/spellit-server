@@ -4,15 +4,35 @@ import random
 import hashlib
 import hmac
 import base64
+import datetime
 from google.appengine.api import urlfetch
-from flask import Flask, abort, redirect, render_template, request, session
+from flask import Flask, abort, g, redirect, render_template, request, session
 from .word import Word
+from .user import User
 from . import news
 
 
 app = Flask(__name__)
 app.secret_key = 'dofiadiovasdiovjaosdcjviasdjvcewj'
 facebook_secret = 'cb1b72a8ccb11253bcef244fbccbd7da'
+
+
+@app.before_request
+def verify_sign():
+    if request.path != '/':
+        try:
+            g.user = session['fbid']
+        except KeyError:
+            abort(403)
+
+
+@app.context_processor
+def inject_user():
+    return {'current_user': current_user()}
+
+
+def current_user():
+    return User.get_by_key_name(session['fbid'])
 
 
 @app.route('/')
@@ -43,45 +63,25 @@ def home():
     res = urlfetch.fetch(url.format(obj['user_id'], obj['oauth_token']),
                          validate_certificate=False)
     user = json.loads(res.content)
-    session['user_res'] = user
-    session['correct_spell'] = ''
-    session['word'] = session['meaning'] = ''
-    return render_template('home.html', user=user)
+    user = User.get_or_insert(obj['user_id'], name=user['name'])
+    session['fbid'] = obj['user_id']
+    session['access_token'] = obj['oauth_token']
+    word = Word.get_by_key_name('about')
+    current_user().encrypt_word(word)
+    return render_template('home.html', next_word=word)
 
 
-@app.route('/plays')
-def plays():
-    word_count = 10 #need to change
-    offset = random.randint(0, word_count)
+@app.route('/plays/<word>')
+def plays(word):
+    try:
+        started_at = session['started_at']
+    except KeyError:
+        started_at = datetime.datetime.utcnow()
+        session['started_at'] = started_at
+    word = current_user().decrypt_word(str(word))
+    character_set = word.character_set
+    return render_template('plays.html', word=word, character_set=character_set)
 
-    correct_spell = session['correct_spell']
-    word = session['word']
-    meaning = session['meaning']
-
-    if word == '':
-        while True:
-            try:
-                word = Word.all().fetch(limit=1, offset=offset)[0]
-                meaning = word.meaning
-                word = word.key().name()
-                session['word'] = word
-                session['meaning'] = meaning
-                meaning = meaning.replace(word, '_ ' * len(word))
-            except LookupError:
-                continue
-            else:
-                break
-    elif correct_spell == word:
-        return redirect('/end')
-    else:
-        replace_word = ''
-        correct_spell_len = len(correct_spell)
-        for spell, space in zip( correct_spell, ' ' * correct_spell_len ):
-            replace_word = replace_word + spell + space
-        replace_word = replace_word + '_ '*(len(word) - correct_spell_len)
-        meaning = meaning.replace(word, replace_word)
-
-    return render_template('plays.html', word=word, meaning=meaning)
 
 @app.route('/plays/playing')
 def playing():

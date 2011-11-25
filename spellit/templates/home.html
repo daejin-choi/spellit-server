@@ -1,15 +1,10 @@
 {% extends 'base.html' %}
 {% block container %}
   <div class="content">
-    <div class="signed-user">
-      <h1>Hello, {{ user.name }}</h1>
-      <h4>Let's start Spell it by pressing Play Games button</h4>
-    </div>
     <div class="logo-images">
       <img src="{{ url_for('static', filename='images/logo.png') }}">
     </div>
-    <a href="{{ url_for('plays') }}" class="btn primary large">
-        Play Games!
-    </a>
+    <a href="{{ url_for('plays', word=current_user.encrypt_word(next_word)) }}"
+       class="btn primary large">Play Games!</a>
   </div>
 {% endblock %}
