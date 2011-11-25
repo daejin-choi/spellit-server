@@ -2,14 +2,14 @@
 {% block head %}
   {{ super() }}
   <style type="text/css">
-  .meaning { height: 400px; overflow-y: auto; }
+  .meaning { height: 350px; overflow-y: auto; }
+  .game-keyboard { text-align:center; } 
   </style>
 {% endblock %}
 {% block container %}
   <div class="meaning">
     {{ word.meaning|safe }}
   </div>
-  <p> {{ word }} / {{ trial }} </p>
   <div class="game-keyboard">
     {% for char in character_set %}
       <a href="{{ url_for('plays', word=word|safeword, trial=trial ~ char) }}"

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    {% block head %}
+   {% block head %}
       <meta charset="utf-8" />
       <title>Spell It</title>
       <link href="{{ url_for('static', filename='bootstrap.css') }}" 
@@ -12,8 +12,22 @@
             filename='docs/assets/js/google-code-prettify/prettify.css') }} " 
             rel="stylesheet">
     {% endblock %}
+  <style type="text/css">
+  body .spellit_bar_text { color:white; font-size:18px; line-height:25px; }   
+  </style>
   </head>
   <body>
+    <div class="topbar-wrapper" style="width:720px; z-index:5; margin-top:0px;">
+      <div class="topbar" data-dropdown="dropdown">
+      <div class="topbar-inner">
+        <div class="container">
+          <div class="spellit_bar_text">
+            SPELL IT &nbsp;&nbsp;&nbsp;&nbsp;
+            Current Corrected Word : {{ corrected_word_count }}
+          </div>
+        </div>
+      </div><!-- /topbar-inner -->
+    </div> 
     <p>&nbsp;</p>
     <div class="container">
      {% block container %}

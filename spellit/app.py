@@ -38,13 +38,21 @@ def urlize_word(word):
         return current_user().encrypt_word(word)
     except OverflowError:
         print word
-        print word
-        print word
         raise
 
 
 def current_user():
     return User.get_by_key_name(session['fbid'])
+
+
+def get_new_word():
+    record = session.get('record', frozenset())
+    while True:
+        Words = Word.all()
+        next_word = Words[random.randint(0, Words.count() - 1)]
+        if next_word not in record:
+            break
+    return next_word
 
 
 @app.route('/')
@@ -78,7 +86,7 @@ def home():
     user = User.get_or_insert(obj['user_id'], name=user['name'])
     session['fbid'] = obj['user_id']
     session['access_token'] = obj['oauth_token']
-    word = Word.get_by_key_name('afternoon')
+    word = get_new_word()
     return render_template('home.html', next_word=word)
 
 

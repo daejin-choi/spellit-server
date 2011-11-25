@@ -86,7 +86,7 @@ blockquote:after {
   content: "";
 }
 html {
-  overflow-y: scroll;
+  overflow-y: auto;
   font-size: 100%;
   -webkit-text-size-adjust: 100%;
   -ms-text-size-adjust: 100%;
@@ -190,7 +190,7 @@ body {
   color: #404040;
 }
 .container {
-  width: 740px;
+  width: 700px;
   margin-left: auto;
   margin-right: auto;
   zoom: 1;

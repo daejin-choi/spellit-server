@@ -1,10 +1,25 @@
+<style type="text/css">
+  .description { width:60%; font-size:17px; text-align:center; }
+  .description p { font-size:17px; text-align:center; }
+</style>
 {% extends 'base.html' %}
 {% block container %}
-  <div class="content">
-    <div class="logo-images">
-      <img src="{{ url_for('static', filename='images/logo.png') }}">
+  <div class="content" style="text-align:center;">
+    <p></p>
+    <div align="center">
+      <div class="description">
+        <p>
+        <strong>Spell it</strong> it the game which the user guesses word by
+        only seeing English-English Dictionary. There are some spell key button
+        in the bottom side, which the user is required to use this to win the
+        game.
+        </p>
+        <p>
+        </p>
+
+      </div>
     </div>
     <a href="{{ url_for('plays', word=next_word|safeword) }}"
-       class="btn primary large">Play Games!</a>
+       class="btn primary large">Play<a>
   </div>
 {% endblock %}
