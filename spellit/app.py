@@ -105,10 +105,14 @@ def plays(word, trial=''):
             if next_word not in session['record']:
                 break
         return redirect(url_for('plays', word=urlize_word(next_word)))
+    len_diff = len(word) - len(trial)
+    replace_word = trial + '_ ' * len_diff
+    meaning = word.meaning.replace(word.word, replace_word)
     character_set = list(frozenset(word[len(trial):]))
     random.shuffle(character_set)
     return render_template('plays.html',
-                           word=word, character_set=character_set, trial=trial)
+                           word=word, character_set=character_set, trial=trial,
+                           meaning=meaning)
 
 
 @app.route('/end')
