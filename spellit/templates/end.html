@@ -1,18 +1,12 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="utf-8" />
-    <title>Spell It</title>
-    <link href="{{ url_for('static', filename='bootstrap.css') }}" 
-          rel="stylesheet">
-    <link href="{{ url_for('static', filename='docs/assets/css/docs.css')}} " 
-          rel="stylesheet">
-    <link href="{{ url_for('static',
-          filename='docs/assets/js/google-code-prettify/prettify.css') }} " 
-          rel="stylesheet">
-  </head>
-  <body>
-    <p>Mission Success</p>
-    <a href="{{ url_for('plays') }}">Restart</a>
-  </body>
-</html>
+{% extends 'base.html' %}
+{% block head %}
+  {{ super() }}
+{% endblock %}
+{% block container %}
+  <div style="text-align:center; font-size:20px;">
+    <p> &nbsp; </p>
+    <p style="font-size:30px;">Mission Success</p>
+    <a href="{{ url_for('plays', word=next_word|safeword) }}"
+       class="btn primary large">Restart<a>
+  </div>
+{% endblock%}

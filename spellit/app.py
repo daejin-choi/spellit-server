@@ -87,7 +87,8 @@ def home():
     session['fbid'] = obj['user_id']
     session['access_token'] = obj['oauth_token']
     word = get_new_word()
-    return render_template('home.html', next_word=word)
+    return render_template('home.html', next_word=word,
+                                        correct_cnt=session['correct_cnt'])
 
 
 @app.route('/plays/<word>')
@@ -105,6 +106,12 @@ def plays(word, trial=''):
         record = session.get('record', frozenset())
         session['record'] = record.union(frozenset([word]))
 
+        correct_cnt = session.get('correct_cnt', 0)
+        session['correct_cnt'] = correct_cnt + 1
+
+        if session['correct_cnt'] == 1:
+            return redirect(url_for('end'))
+
         while True:
             Words = Word.all()
             next_word = Words[random.randint(0, Words.count() - 1)]
@@ -118,14 +125,14 @@ def plays(word, trial=''):
     random.shuffle(character_set)
     return render_template('plays.html',
                            word=word, character_set=character_set, trial=trial,
-                           meaning=meaning)
+                           meaning=meaning, correct_cnt=session['correct_cnt'])
 
 
 @app.route('/end')
 def end():
-    session['word'] = ''
-    session['correct_spell'] = ''
-    return render_template('end.html', time=3600)
+    next_word = get_new_word()
+    return render_template('end.html', next_word=next_word,
+                                       correct_cnt=session['correct_cnt'])
 
 
 @app.route('/words/')
