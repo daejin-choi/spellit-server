@@ -6,7 +6,8 @@ import hmac
 import base64
 import datetime
 from google.appengine.api import urlfetch
-from flask import Flask, abort, g, redirect, render_template, request, session
+from flask import (Flask, abort, g, redirect, render_template, request,
+                   session, url_for)
 from .word import Word
 from .user import User
 from . import news
@@ -33,7 +34,13 @@ def inject_user():
 
 @app.template_filter('safeword')
 def urlize_word(word):
-    return current_user().encrypt_word(word)
+    try:
+        return current_user().encrypt_word(word)
+    except OverflowError:
+        print word
+        print word
+        print word
+        raise
 
 
 def current_user():
@@ -71,8 +78,7 @@ def home():
     user = User.get_or_insert(obj['user_id'], name=user['name'])
     session['fbid'] = obj['user_id']
     session['access_token'] = obj['oauth_token']
-    word = Word.get_by_key_name('about')
-    current_user().encrypt_word(word)
+    word = Word.get_by_key_name('afternoon')
     return render_template('home.html', next_word=word)
 
 
@@ -81,6 +87,16 @@ def home():
 def plays(word, trial=''):
     word = current_user().decrypt_word(str(word))
     assert word.startswith(trial), 'word = %r, trial = %r' % (word, trial)
+    if word.word == trial:
+        record = session.get('record', frozenset())
+        session['record'] = record.union(frozenset([word]))
+
+        while True:
+            Words = Word.all()
+            next_word = Words[random.randint(0, Words.count() - 1)]
+            if next_word not in session['record']:
+                break
+        return redirect(url_for('plays', word=urlize_word(next_word)))
     character_set = list(frozenset(word[len(trial):]))
     random.shuffle(character_set)
     return render_template('plays.html',

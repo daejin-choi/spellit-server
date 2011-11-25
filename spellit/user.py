@@ -36,20 +36,28 @@ class User(db.Model):
         if not isinstance(word, Word):
             raise TypeError('word must be a spellit.word.Word, not ' +
                             repr(word))
-        code = rsa.encrypt(word.word.encode('utf-8'), self.public_key)
-        tohex = '{0:02x}'.format
-        return ''.join(tohex(ord(c)) for c in code)
+        word = word.word.encode('utf-8')
+        chunks = []
+        for i in xrange(0, len(word), 5):
+            chunk = word[i:i + 5]
+            code = rsa.encrypt(chunk, self.public_key)
+            tohex = '{0:02x}'.format
+            chunks.append(''.join(tohex(ord(c)) for c in code))
+        return '-'.join(chunks)
 
     def decrypt_word(self, encrypted_word):
         if not isinstance(encrypted_word, str):
             raise TypeError('encrypted_word must be a UTF-8 encoded str, not '
                             + repr(encrypted_word))
-        count = len(encrypted_word)
-        if count % 2:
-            raise ValueError('invalid encrypted_word: its length must be '
-                             'even')
-        code = ''.join(chr(int(encrypted_word[i:i + 2], base=16))
-                       for i in xrange(0, count, 2))
-        word = rsa.decrypt(code, self.private_key).decode('utf-8')
-        return Word.get_by_key_name(word)
+        chunks = encrypted_word.split('-')
+        word = []
+        for chunk in chunks:
+            count = len(chunk)
+            if count % 2:
+                raise ValueError('invalid encrypted_word')
+            code = ''.join(chr(int(chunk[i:i + 2], base=16))
+                           for i in xrange(0, count, 2))
+            chunk = rsa.decrypt(code, self.private_key)
+            word.append(chunk)
+        return Word.get_by_key_name(''.join(word).decode('utf-8'))
 
