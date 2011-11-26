@@ -86,6 +86,7 @@ def home():
     user = User.get_or_insert(obj['user_id'], name=user['name'])
     session['fbid'] = obj['user_id']
     session['access_token'] = obj['oauth_token']
+    session['correct_cnt'] = 0
     word = get_new_word()
     return render_template('home.html', next_word=word,
                                         correct_cnt=session['correct_cnt'])
@@ -98,7 +99,7 @@ def plays(word, trial=''):
     #assert word.startswith(trial), 'word = %r, trial = %r' % (word, trial)
     if not word.startswith(trial):
         flash('You are Incorrect, please try with another spelling')
-        if len(trial) != 0:
+        if len(trial) > 0:
             trial = trial[:-1]
         return redirect(url_for('plays', word=urlize_word(word),
                                          trial=trial))
@@ -158,7 +159,7 @@ def meaning(word):
 @app.route('/tasks/crawlword')
 def crawlword():
     NM = news.NewsManager()
-    result = NM.GetNewsWords(5) # 5: number of news
+    result = NM.GetNewsWords(2) # 5: number of news
     Word.increment_frequencies(result)
 
     return ''

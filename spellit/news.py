@@ -57,7 +57,10 @@ class NewsManager(object):
 
 
     def crawlWords(self, newslink):
-        html = lxml.html.parse(newslink['href'])
+
+        #html = lxml.html.parse(newslink['href'])
+        newsweb = urlfetch.Fetch(newslink['href'])
+        html = lxml.html.fromstring(newsweb.content)
         sel = lxml.cssselect.CSSSelector(NEWS_TAG)
         paras = sel(html)
 
