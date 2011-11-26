@@ -50,8 +50,13 @@ def get_new_word():
     while True:
         Words = Word.all()
         next_word = Words[random.randint(0, Words.count() - 1)]
-        if next_word not in record:
-            break
+        try:
+            meaning = next_word.meaning
+        except LookupError:
+            continue
+        else :
+            if next_word not in record:
+                break
     return next_word
 
 
@@ -101,8 +106,9 @@ def plays(word, trial=''):
         flash('You are Incorrect, please try with another spelling')
         if len(trial) > 0:
             trial = trial[:-1]
-        return redirect(url_for('plays', word=urlize_word(word),
-                                         trial=trial))
+            return redirect(url_for('plays', word=urlize_word(word),
+                                             trial=trial))
+        return redirect(url_for('plays', word=urlize_word(word)))
     if word.word == trial:
         record = session.get('record', frozenset())
         session['record'] = record.union(frozenset([word]))
@@ -110,14 +116,10 @@ def plays(word, trial=''):
         correct_cnt = session.get('correct_cnt', 0)
         session['correct_cnt'] = correct_cnt + 1
 
-        if session['correct_cnt'] == 1:
+        if session['correct_cnt'] == 2:
             return redirect(url_for('end'))
 
-        while True:
-            Words = Word.all()
-            next_word = Words[random.randint(0, Words.count() - 1)]
-            if next_word not in session['record']:
-                break
+        next_word = get_new_word()
         return redirect(url_for('plays', word=urlize_word(next_word)))
     len_diff = len(word) - len(trial)
     replace_word = trial + '_ ' * len_diff
@@ -132,8 +134,10 @@ def plays(word, trial=''):
 @app.route('/end')
 def end():
     next_word = get_new_word()
+    correct_cnt = session['correct_cnt']
+    session['correct_cnt'] = 0
     return render_template('end.html', next_word=next_word,
-                                       correct_cnt=session['correct_cnt'])
+                                       correct_cnt=correct_cnt)
 
 
 @app.route('/words/')
